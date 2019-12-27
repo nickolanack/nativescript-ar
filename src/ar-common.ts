@@ -4,6 +4,7 @@ import { ImageSource } from "tns-core-modules/image-source";
 import { ContentView } from "tns-core-modules/ui/content-view";
 import { Property, View } from "tns-core-modules/ui/core/view";
 import { booleanConverter } from "tns-core-modules/ui/core/view-base";
+import { FontStyle, FontWeight } from "tns-core-modules/ui/styling/font";
 
 export type ARDebugLevel = "NONE" | "WORLD_ORIGIN" | "FEATURE_POINTS" | "PHYSICS_SHAPES";
 
@@ -169,6 +170,11 @@ export interface ARUIViewOptions extends ARAddOptions {
 export interface ARAddImageOptions extends ARAddOptions {
   image: string | ImageSource;
   dimensions?: ARDimensions2D;
+  font?:string;
+  fontSize?:number;
+  fontWeight?:FontWeight;
+  fontStyle?:FontStyle;
+  fontColor?:Color|string;
 }
 
 export interface ARAddModelOptions extends ARAddGeometryOptions {
