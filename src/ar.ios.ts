@@ -1,5 +1,5 @@
 import * as application from "tns-core-modules/application";
-import { fromNativeSource, ImageSource } from "tns-core-modules/image-source";
+import { fromNativeSource, ImageSource, fromFileOrResource} from "tns-core-modules/image-source";
 import { device } from "tns-core-modules/platform";
 import lazy from "tns-core-modules/utils/lazy";
 import { AR as ARBase, ARAddBoxOptions, ARAddImageOptions, ARAddModelOptions, ARAddOptions, ARAddPlaneOptions, ARAddSphereOptions, ARAddTextOptions, ARAddTubeOptions, ARAddVideoOptions, ARCommonNode, ARDebugLevel, ARFaceTrackingActions, ARImageTrackingActions, ARImageTrackingOptions, ARLoadedEventData, ARPlaneDetectedEventData, ARPlaneDetectionOrientation, ARPlaneTappedEventData, ARPosition, ARRotation, ARSceneTappedEventData, ARTrackingFaceEventData, ARTrackingFaceEventType, ARTrackingImageDetectedEventData, ARTrackingMode, ARUIViewOptions, ARVideoNode } from "./ar-common";
@@ -742,12 +742,14 @@ export class AR extends ARBase {
 
     let img;
 
-    // TODO (no rush) add 'app' bundle option, via '~' prefix, and even a NativeScript Image object
-    if (options.image.indexOf('://') > 0) {
+    if(options.image.indexOf('res://')===0||options.image.indexOf('~')===0){
+      img = fromFileOrResource(options.image).ios;
+    }else if (options.image.indexOf('://') > 0) {
       img = UIImage.imageWithData(NSData.alloc().initWithContentsOfURL(NSURL.URLWithString(options.image)));
     } else {
       img = UIImage.imageNamed(options.image);
     }
+    
 
     const refImage = ARReferenceImage.alloc().initWithCGImageOrientationPhysicalWidth(img.CGImage, 1, options.width || 1);
     refImage.name = name;

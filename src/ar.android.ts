@@ -268,6 +268,7 @@ export class AR extends ARBase {
   }
 
   disposeNativeView(): void {
+
     super.disposeNativeView();
     // (fix: #90) remove anchor node
     if (_origin) {
@@ -279,10 +280,12 @@ export class AR extends ARBase {
     supportFragmentManager.beginTransaction().remove(_fragment).commit();
   }
 
+ 
+
   public getCameraPosition(): ARPosition {
     const p = Array.create("float", 3);
     _fragment.getArSceneView().getArFrame().getCamera().getPose().getTranslation(p, 0);
-    return {x: p[0], y: p[1], z: p[2]};
+    return { x: p[0], y: p[1], z: p[2] };
   }
 
   public getCameraRotation(): ARRotation {
@@ -329,7 +332,7 @@ export class AR extends ARBase {
       return ((rad * (180.0 / Math.PI)) + 360) % 360;
     };
 
-    return {x: toDeg(rot.x), y: toDeg(rot.y), z: toDeg(rot.z)};
+    return { x: toDeg(rot.x), y: toDeg(rot.y), z: toDeg(rot.z) };
   }
 
   private initAR() {
@@ -382,11 +385,11 @@ export class AR extends ARBase {
                     anchor.addChild(planeNode);
 
                     planeNode.setLocalRotation(new (<any>com.google.ar.sceneform).math.Quaternion(
-                        new (<any>com.google.ar.sceneform).math.Vector3(
-                            -90, // sceneform orients tracked images in x-z plane
-                            0,
-                            0
-                        )
+                      new (<any>com.google.ar.sceneform).math.Vector3(
+                        -90, // sceneform orients tracked images in x-z plane
+                        0,
+                        0
+                      )
                     ));
 
                     const eventData: ARTrackingImageDetectedEventData = {
@@ -419,8 +422,11 @@ export class AR extends ARBase {
 
       } else {
         _fragment = new com.google.ar.sceneform.ux.ArFragment();
+
       }
     }
+
+
 
     const onCamPermissionGranted = () => {
       if (this.trackingMode === "FACE") {
@@ -525,10 +531,10 @@ export class AR extends ARBase {
 
     setTimeout(() => {
       if (_fragment.getArSceneView() &&
-          _fragment.getArSceneView().getSession() &&
-          _fragment.getArSceneView().getArFrame() &&
-          _fragment.getArSceneView().getArFrame().getCamera() &&
-          _fragment.getArSceneView().getArFrame().getCamera().getTrackingState() === com.google.ar.core.TrackingState.TRACKING) {
+        _fragment.getArSceneView().getSession() &&
+        _fragment.getArSceneView().getArFrame() &&
+        _fragment.getArSceneView().getArFrame().getCamera() &&
+        _fragment.getArSceneView().getArFrame().getCamera().getTrackingState() === com.google.ar.core.TrackingState.TRACKING) {
 
         const eventData: ARLoadedEventData = {
           eventName: ARBase.arLoadedEvent,
@@ -695,9 +701,9 @@ export class AR extends ARBase {
     let hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
     if (!hasPermission) {
       hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ===
-          ContentPackageName.ContextCompat.checkSelfPermission(
-              utils.ad.getApplicationContext(),
-              permission);
+        ContentPackageName.ContextCompat.checkSelfPermission(
+          utils.ad.getApplicationContext(),
+          permission);
     }
     return hasPermission;
   }
@@ -722,9 +728,9 @@ export class AR extends ARBase {
     application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, onPermissionEvent);
 
     AppPackageName.ActivityCompat.requestPermissions(
-        application.android.foregroundActivity || application.android.startActivity,
-        [permission],
-        permissionRequestCode
+      application.android.foregroundActivity || application.android.startActivity,
+      [permission],
+      permissionRequestCode
     );
   }
 

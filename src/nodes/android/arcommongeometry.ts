@@ -10,7 +10,7 @@ export abstract class ARCommonGeometryNode extends ARCommonNode {
 
     if (options.materials) {
       let material = options.materials[0];
-      ARMaterialFactory.applyMaterial(node, <ARMaterial>material);
+      ARMaterialFactory.applyMaterial(node, <ARMaterial>material).catch(console.error);
     }
   }
 

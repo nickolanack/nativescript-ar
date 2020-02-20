@@ -10,30 +10,14 @@ const pixelsPerMeter = 500;
 export class ARImage extends ARCommonNode {
 
   static create(options: ARAddImageOptions, fragment): Promise<ARImage> {
-    if (typeof options.image === "string") {
+    
 
-      if (options.image.indexOf("://") >= 0) {
+    return ARImage.resolveImageOptions(options).then((options)=>{
 
-        if (options.image.indexOf("font://") >= 0) {
-          return new Promise((resolve) => {
+      return new Promise<ARImage>(async (resolve, reject) => {
 
-            let color=(options.fontColor instanceof Color)?options.fontColor:new Color(options.fontColor||"black")
-            options.image =  fromFontIconCode((<string>options.image).split('font://').pop(), new Font(
-              options.font||'FontAwesome', options.fontSize||100,  options.fontStyle||'normal', options.fontWeight||"300"), color);
-            resolve(ARImage.create(options, fragment));
-          });
-        }
 
-        return fromUrl(options.image).then(image => {
-          options.image = image;
-          return ARImage.create(options, fragment);
-        });
-      }
 
-      options.image = fromFileOrResource(options.image);
-    }
-
-    return new Promise<ARImage>(async (resolve, reject) => {
       const image = (<ImageSource>options.image).android;
 
       const context = utils.ad.getApplicationContext();
@@ -65,6 +49,72 @@ export class ARImage extends ARCommonNode {
           .exceptionally(new (<any>java.util).function.Function({
             apply: error => reject(error)
           }));
+      });
+
+    });
+
+
+    
+  }
+
+
+  public setImage(options: ARAddImageOptions){
+    return ARImage.resolveImageOptions(options).then((options)=>{
+
+      return new Promise<ARImage>(async (resolve, reject) => {
+
+        console.log('set image');
+        const image = (<ImageSource>options.image).android;
+
+
+        const renderable:com.google.ar.sceneform.rendering.ViewRenderable = <com.google.ar.sceneform.rendering.ViewRenderable>this.android.getRenderable();
+          if (options.dimensions) {
+                renderable.setSizer(new com.google.ar.sceneform.rendering.FixedWidthViewSizer(options.dimensions.x));
+              } else {
+                renderable.setSizer(new com.google.ar.sceneform.rendering.DpToMetersViewSizer(pixelsPerMeter));
+              }
+         (<android.widget.ImageView>renderable.getView()).setImageBitmap(image);
+         renderable.
+         console.log('set image done');
+       });
+    });
+
+  }
+
+
+  private static resolveImageOptions(options: ARAddImageOptions){
+
+    return new Promise((resolve, reject)=>{
+      if (typeof options.image === "string") {
+
+        if (options.image.indexOf("://") >= 0) {
+
+          if (options.image.indexOf("font://") >= 0) {
+
+              let color=(options.fontColor instanceof Color)?options.fontColor:new Color(options.fontColor||"black")
+              options.image =  fromFontIconCode((<string>options.image).split('font://').pop(), new Font(
+                options.font||'FontAwesome', (options.fontSize||0.25)*pixelsPerMeter,  options.fontStyle||'normal', options.fontWeight||"100"), color);
+                options.dimensions={
+                 x:options.image.width/pixelsPerMeter, y:options.image.height/pixelsPerMeter
+               }
+
+              resolve(options);
+              return;
+          }
+          fromUrl(options.image).then(image => {
+            options.image = image;
+            resolve(options);
+          }).catch(reject);
+          return;
+        }
+
+        options.image = fromFileOrResource(options.image);
+      }
+
+      resolve(options);
+
     });
   }
+
+
 }

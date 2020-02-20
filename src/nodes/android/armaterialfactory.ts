@@ -10,7 +10,7 @@ export class ARMaterialFactory {
     if (typeof material === "string") {
 
       return new Promise<void>((resolve, reject) => {
-        reject("not implemented");
+        reject("not implemented: string material use Color, or {diffuse...");
       });
 
     } else if (material.constructor.name === "Color") {
