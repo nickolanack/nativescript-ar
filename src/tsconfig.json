@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ES2017",
+    "module": "esnext",
+    "moduleResolution": "node",
     "declaration": true,
     "removeComments": true,
     "noLib": false,
@@ -33,5 +34,9 @@
     "demo",
     "node_modules"
   ],
-  "compileOnSave": false
+  "compileOnSave": false,
+  "plugins": [{
+    "transform": "@nativescript/webpack/transformers/ns-transform-native-classes",
+    "type": "raw"
+  }]
 }

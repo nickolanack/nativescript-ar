@@ -150,7 +150,7 @@ const getOriginAnchor = () => {
   return _origin;
 };
 
-
+@NativeClass()
 class TNSArFragmentForFaceDetection extends com.google.ar.sceneform.ux.ArFragment {
 
   constructor() {

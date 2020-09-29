@@ -1,6 +1,6 @@
-import { fromFileOrResource, fromUrl } from "tns-core-modules/image-source";
-import * as utils from "tns-core-modules/utils/utils";
+import { ImageSource, Utils as utils } from "@nativescript/core";
 
+@NativeClass()
 export class TNSArFragmentForImageDetection extends com.google.ar.sceneform.ux.ArFragment {
 
   augmentedImageDatabase: any;
@@ -14,6 +14,7 @@ export class TNSArFragmentForImageDetection extends com.google.ar.sceneform.ux.A
     return global.__native(this);
   }
 
+  @Override
   getSessionConfiguration(session) {
     const config = new (<any>com.google.ar).core.Config(session);
     this.config = config;
@@ -42,6 +43,7 @@ export class TNSArFragmentForImageDetection extends com.google.ar.sceneform.ux.A
     });
   }
 
+  @Override
   onCreateView(inflater, container, savedInstanceState) {
     const frameLayout = super.onCreateView(inflater, container, savedInstanceState);
     super.getPlaneDiscoveryController().hide();
@@ -49,6 +51,7 @@ export class TNSArFragmentForImageDetection extends com.google.ar.sceneform.ux.A
     super.getArSceneView().getPlaneRenderer().setEnabled(false);
     return frameLayout;
   }
+
 
   setupAugmentedImageDatabase(config, session) {
     this.augmentedImageDatabase = new (<any>com.google.ar).core.AugmentedImageDatabase(session);
@@ -206,7 +209,7 @@ export class TNSArFragmentForImageDetection extends com.google.ar.sceneform.ux.A
         const assetManager = context.getAssets();
 
         if (asset.indexOf("://") >= 0) {
-          fromUrl(asset).then((image) => {
+          ImageSource.fromUrl(asset).then((image) => {
             this.addBitmap(image.android, name, width);
           }).catch(console.error);
           return;
@@ -223,7 +226,7 @@ export class TNSArFragmentForImageDetection extends com.google.ar.sceneform.ux.A
         }
 
         try {
-          image = fromFileOrResource(asset);
+          image = ImageSource.fromFileOrResource(asset);
           this.addBitmap(image.android, name, width);
           return;
         } catch (e) {

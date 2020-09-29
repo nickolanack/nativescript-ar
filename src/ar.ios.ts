@@ -1,7 +1,5 @@
-import * as application from "tns-core-modules/application";
-import { fromNativeSource, ImageSource } from "tns-core-modules/image-source";
-import { device } from "tns-core-modules/platform";
-import lazy from "tns-core-modules/utils/lazy";
+import { Application as application, ImageSource, Device as device} from "@nativescript/core";
+import lazy from "@nativescript/core/utils/lazy";
 import { AR as ARBase, ARAddBoxOptions, ARAddImageOptions, ARAddModelOptions, ARAddOptions, ARAddPlaneOptions, ARAddSphereOptions, ARAddTextOptions, ARAddTubeOptions, ARAddVideoOptions, ARCommonNode, ARDebugLevel, ARFaceTrackingActions, ARImageTrackingActions, ARImageTrackingOptions, ARLoadedEventData, ARPlaneDetectedEventData, ARPlaneDetectionOrientation, ARPlaneTappedEventData, ARPosition, ARRotation, ARSceneTappedEventData, ARTrackingFaceEventData, ARTrackingFaceEventType, ARTrackingImageDetectedEventData, ARTrackingMode, ARUIViewOptions, ARVideoNode } from "./ar-common";
 import { ARBox } from "./nodes/ios/arbox";
 import { ARGroup } from "./nodes/ios/argroup";
@@ -174,7 +172,7 @@ export class AR extends ARBase {
   public grabScreenshot(): Promise<ImageSource> {
     return new Promise((resolve, reject) => {
       if (this.sceneView) {
-        resolve(fromNativeSource(this.sceneView.snapshot()));
+        resolve(ImageSource.fromNativeSource(this.sceneView.snapshot()));
         return;
       }
       reject("sceneView is not available");
@@ -780,7 +778,7 @@ export class AR extends ARBase {
   }
 }
 
-
+@NativeClass()
 class ScenePinchHandlerImpl extends NSObject {
   private _owner: WeakRef<AR>;
 
@@ -799,6 +797,7 @@ class ScenePinchHandlerImpl extends NSObject {
   };
 }
 
+@NativeClass()
 class SceneTapHandlerImpl extends NSObject {
   private _owner: WeakRef<AR>;
 
@@ -835,6 +834,7 @@ class SceneLongPressHandlerImpl extends NSObject {
   };
 }
 
+@NativeClass()
 class ScenePanHandlerImpl extends NSObject {
   private _owner: WeakRef<AR>;
 
@@ -871,6 +871,7 @@ class SceneRotationHandlerImpl extends NSObject {
   };
 }
 
+@NativeClass()
 class ARSCNViewDelegateImpl extends NSObject implements ARSCNViewDelegate {
   public static ObjCProtocols = [];
 
@@ -1213,6 +1214,7 @@ class ARFaceTrackingActionsImpl implements ARFaceTrackingActions {
   }
 }
 
+@NativeClass()
 class ARSessionDelegateImpl extends NSObject implements ARSessionDelegate {
   public static ObjCProtocols = [];
 
@@ -1242,6 +1244,7 @@ class ARSessionDelegateImpl extends NSObject implements ARSessionDelegate {
   }
 }
 
+@NativeClass()
 class SCNPhysicsContactDelegateImpl extends NSObject implements SCNPhysicsContactDelegate {
   public static ObjCProtocols = [SCNPhysicsContactDelegate];
 

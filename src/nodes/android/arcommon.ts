@@ -1,4 +1,4 @@
-import { screen } from "tns-core-modules/platform";
+import { Screen as screen } from "@nativescript/core";
 import * as utils from "tns-core-modules/utils/utils";
 import { ARAddOptions, ARCommonNode as IARCommonNode, ARDimensions2D, ARNodeInteraction, ARPosition, ARRotation, ARScale } from "../../ar-common";
 
