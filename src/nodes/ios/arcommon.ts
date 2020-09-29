@@ -143,6 +143,16 @@ export abstract class ARCommonNode implements IARCommonNode {
     };
   }
 
+
+  toWorldPosition(localPos: ARPosition): ARPosition {
+       let pos = this.ios.convertPositionToNode(localPos, null);
+       return {
+          x: pos.x,
+          y: pos.y,
+          z: pos.z
+        }
+  }
+
   lookAtWorldPosition(worldPos: ARPosition): void {
     this.ios.lookAt(worldPos); // ,  {x:0, y:1, z:0},  {x:0, y:0, z:1}
   }

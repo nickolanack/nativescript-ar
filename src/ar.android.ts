@@ -288,6 +288,12 @@ export class AR extends ARBase {
     return { x: p[0], y: p[1], z: p[2] };
   }
 
+  public getCameraDirection():ARPosition{
+
+     const p =_fragment.getArSceneView().getArFrame().getCamera().getPose().getZAxis();
+     return { x: p[0], y: p[1], z: p[2] };
+  }
+
   public getCameraRotation(): ARRotation {
 
     // modified from:

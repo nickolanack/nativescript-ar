@@ -63,7 +63,6 @@ export class ARImage extends ARCommonNode {
 
       return new Promise<ARImage>(async (resolve, reject) => {
 
-        console.log('set image');
         const image = (<ImageSource>options.image).android;
 
 
@@ -74,15 +73,21 @@ export class ARImage extends ARCommonNode {
                 renderable.setSizer(new com.google.ar.sceneform.rendering.DpToMetersViewSizer(pixelsPerMeter));
               }
          (<android.widget.ImageView>renderable.getView()).setImageBitmap(image);
-         renderable.
-         console.log('set image done');
        });
     });
 
   }
 
 
-  private static resolveImageOptions(options: ARAddImageOptions){
+  private static resolveImageOptions(options: ImageSource|ARAddImageOptions|string){
+
+    if (typeof options === "string"||options instanceof ImageSource){
+      options=<ARAddImageOptions>{
+        image:options
+      }
+    }
+
+
 
     return new Promise((resolve, reject)=>{
       if (typeof options.image === "string") {
@@ -118,3 +123,5 @@ export class ARImage extends ARCommonNode {
 
 
 }
+
+

@@ -1,4 +1,4 @@
-import { screen } from "tns-core-modules/platform";
+import { Screen as screen } from "@nativescript/core";
 import * as utils from "tns-core-modules/utils/utils";
 import { ARAddOptions, ARCommonNode as IARCommonNode, ARDimensions2D, ARNodeInteraction, ARPosition, ARRotation, ARScale } from "../../ar-common";
 
@@ -195,6 +195,20 @@ export abstract class ARCommonNode implements IARCommonNode {
             )
         )
     );
+  }
+
+  toWorldPosition(localPos: ARPosition): ARPosition {
+        const pos= this.android.localToWorldPoint(new (<any>com.google.ar.sceneform).math.Vector3(
+            localPos.x,
+            localPos.y,
+            localPos.z
+        ));
+
+        return {
+          x: pos.x,
+          y: pos.y,
+          z: pos.z
+        };
   }
 
   lookAtWorldPosition(worldPos: ARPosition): void {

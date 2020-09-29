@@ -1,5 +1,4 @@
-import { screen } from "tns-core-modules/platform";
-import { View } from "tns-core-modules/ui/core/view";
+import { Screen as screen, View } from "@nativescript/core";
 import { ARDimensions2D, ARUIViewOptions } from "../../ar-common";
 import { ARCommonNode } from "./arcommon";
 

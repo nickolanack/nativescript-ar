@@ -1,6 +1,6 @@
 import * as application from "tns-core-modules/application";
 import { fromNativeSource, ImageSource, fromFileOrResource} from "tns-core-modules/image-source";
-import { device } from "tns-core-modules/platform";
+import { Device as device } from "@nativescript/core/platform";
 import lazy from "tns-core-modules/utils/lazy";
 import { AR as ARBase, ARAddBoxOptions, ARAddImageOptions, ARAddModelOptions, ARAddOptions, ARAddPlaneOptions, ARAddSphereOptions, ARAddTextOptions, ARAddTubeOptions, ARAddVideoOptions, ARCommonNode, ARDebugLevel, ARFaceTrackingActions, ARImageTrackingActions, ARImageTrackingOptions, ARLoadedEventData, ARPlaneDetectedEventData, ARPlaneDetectionOrientation, ARPlaneTappedEventData, ARPosition, ARRotation, ARSceneTappedEventData, ARTrackingFaceEventData, ARTrackingFaceEventType, ARTrackingImageDetectedEventData, ARTrackingMode, ARUIViewOptions, ARVideoNode } from "./ar-common";
 import { ARBox } from "./nodes/ios/arbox";
@@ -14,6 +14,9 @@ import { ARText } from "./nodes/ios/artext";
 import { ARTube } from "./nodes/ios/artube";
 import { ARUIView } from "./nodes/ios/aruiview";
 import { ARVideo } from "./nodes/ios/arvideo";
+
+
+
 
 export { ARDebugLevel, ARTrackingMode };
 
@@ -247,15 +250,112 @@ export class AR extends ARBase {
     });
   }
 
+
+    private _loc={x:0, y:0, z:0, time:(new Date()).getTime()};
+     private _transform=null;
+
+    public _onUpdateFrame(frame:ARFrame){
+    //console.log("Hello world");
+    //let transform =frame.camera.transform;
+
+
+
+      var camera = frame.camera;
+
+      if(camera.trackingState!=ARTrackingState.Normal){
+        return;
+      }
+
+      
+
+      var transform = camera.transform;
+      var dx =  transform.columns[3][0];
+      var dy =  transform.columns[3][1];
+      var dz =  transform.columns[3][2];
+      
+      this._loc={x:0+dx, y:0+dy, z:0+dz, time:(new Date()).getTime()};
+      this._transform=transform;
+    }
+
+    private _cameraNode;
+
   public getCameraPosition(): ARPosition {
-    const p = this.sceneView.defaultCameraController.pointOfView.worldPosition;
-    return {x: p.x, y: p.y, z: p.z};
+
+
+    if(!this._cameraNode){
+      this._cameraNode=SCNNode.node();
+      this.sceneView.scene.rootNode.addChildNode(this._cameraNode);
+    }
+    if(this._transform){
+      this._cameraNode.simdTransform== (this._transform*matrix_identity_float4x4);
+      let ppos=this._cameraNode.simdPosition;
+    }
+
+   const pos=this._cameraNode.worldPosition;
+
+   const root=this.sceneView.scene.rootNode;
+   const childnodes=root.childNodes;
+
+   for(let i=0;i<childnodes.count;i++){
+
+     ((c)=>{
+
+        
+      
+       if(c.camera){
+          const p=c.position;
+         const n=c.name;
+         const cam=c.camera;
+         console.log(c);
+       }
+       
+
+     })(childnodes.objectAtIndex(i));
+
+   }
+
+
+   
+
+
+    // const projectedPoint=this.renderer.unprojectPoint({x:0.5, y:0.5,z:0});
+    // return {
+    //   x:projectedPoint.x,
+    //   y:projectedPoint.y,
+    //   z:projectedPoint.z
+    // };
+
+
+    let del=this.sceneView.session.delegate;
+    if(!del){
+      console.log('had to re-add delegate');
+       this.sceneView.session.delegate = ARSessionDelegateImpl.createWithOwner(new WeakRef(this));
+
+      
+    }
+
+
+    return this._loc;
+
+   
+    // var camera = this.sceneView.session.currentFrame.camera;//1
+    // var transform = camera.transform;//2
+    // var x=transform.columns[3][0];//3
+    // var y= transform.columns[3][1];
+    // var z=transform.columns[3][2];
+    
+    //return {x: x, y: y, z: z};
+
+    //const p = this.sceneView.defaultCameraController.pointOfView.worldPosition;
+    //return {x: p.x, y: p.y, z: p.z};
   }
 
   private getCameraRotationRad(): ARRotation {
     let rot = this.sceneView.defaultCameraController.pointOfView.eulerAngles;
     return {x: rot.x, y: rot.y, z: rot.z};
   }
+
+
 
   public getCameraRotation(): ARRotation {
     const rot = this.getCameraRotationRad();
@@ -266,6 +366,22 @@ export class AR extends ARBase {
 
     return {x: toDeg(rot.x), y: toDeg(rot.y), z: toDeg(rot.z)};
   }
+
+
+private getCameraDirection(): ARPosition {
+    let dir = this.sceneView.defaultCameraController.pointOfView.worldFront;
+    const v= {x: dir.x, y: dir.y, z: dir.z};
+
+    //camera normal points out of screen...
+    //invert
+
+    const inv=-1.0/Math.sqrt((v.x*v.x+v.y*v.y+v.z*v.z));
+
+    return {x:v.x*inv, y:v.y*inv, z:v.z*inv};
+
+  }
+
+
 
   private initAR() {
     if (!AR.isSupported()) {
@@ -305,17 +421,16 @@ export class AR extends ARBase {
     }
 
     this.sceneView = ARSCNView.new();
+    this.renderer=this.sceneView;
     this.sceneView.delegate = this.delegate = ARSCNViewDelegateImpl.createWithOwnerResultCallbackAndOptions(
         new WeakRef(this),
         data => {
         },
         {});
 
-    // this.sceneView.session.delegate = ARSessionDelegateImpl.createWithOwnerResultCallbackAndOptions(
-    //     new WeakRef(this),
-    //     data => {
-    //     },
-    //     {});
+    
+
+    console.log("Added session delegate");
 
     this.toggleStatistics(this.showStatistics);
 
@@ -337,7 +452,19 @@ export class AR extends ARBase {
     }
 
     this.configuration.lightEstimationEnabled = true;
+    this.configuration.worldAlignment=ARWorldAlignment.GravityAndHeading;// //ARWorldAlignmentGravityAndHeading//1;
     this.sceneView.session.runWithConfiguration(this.configuration);
+    console.log('Create Session Delegate');
+    this.sceneView.session.delegate = ARSessionDelegateImpl.createWithOwner(new WeakRef(this));
+    
+  
+   
+
+    // .createWithOwnerResultCallbackAndOptions(
+    //     new WeakRef(this),
+    //     data => {
+    //     },
+    //     {});
 
     // tweak with delegate, see https://github.com/markdaws/arkit-by-example/blob/master/arkit-by-example/ViewController.m
     // const env = UIImage.imageNamed("./Assets.scnassets/Environment/spherical.jpg");
@@ -384,6 +511,8 @@ export class AR extends ARBase {
         ios: this.sceneView
       };
       this.notify(eventData);
+
+      
     });
   }
 
@@ -758,6 +887,7 @@ export class AR extends ARBase {
     this.configuration.maximumNumberOfTrackedImages = Math.min(set.count, 50);
     this.sceneView.session.runWithConfigurationOptions(this.configuration, ARSessionRunOptions.ResetTracking | ARSessionRunOptions.RemoveExistingAnchors);
 
+
     if (!options.onDetectedImage) {
       return;
     }
@@ -770,6 +900,11 @@ export class AR extends ARBase {
   }
 
   public reset(): void {
+
+    console.log("Reset");
+
+    return;
+
     // TODO (low prio) restore to the requested value
     (<ARWorldTrackingConfiguration>this.configuration).planeDetection = ARPlaneDetection.Horizontal;
     this.sceneView.session.runWithConfigurationOptions(this.configuration, ARSessionRunOptions.ResetTracking | ARSessionRunOptions.RemoveExistingAnchors);
@@ -965,7 +1100,12 @@ class ARSCNViewDelegateImpl extends NSObject implements ARSCNViewDelegate {
       if (limitedTrackingStateReason !== null) {
         console.log(`Limited tracking state reason: ${limitedTrackingStateReason}`);
       }
+
+      
+
     }
+
+
   }
 
   rendererDidAddNodeForAnchor(renderer: SCNSceneRenderer, node: SCNNode, anchor: ARAnchor): void {
@@ -1063,6 +1203,7 @@ class ARSCNViewDelegateImpl extends NSObject implements ARSCNViewDelegate {
   public occlusionNode: SCNNode;
 
   rendererNodeForAnchor(renderer: SCNSceneRenderer, anchor: ARAnchor): SCNNode {
+    this.owner.get().renderer = renderer;
     const node = SCNNode.new();
     const owner = this.owner.get();
 
@@ -1216,31 +1357,56 @@ class ARFaceTrackingActionsImpl implements ARFaceTrackingActions {
 }
 
 class ARSessionDelegateImpl extends NSObject implements ARSessionDelegate {
-  public static ObjCProtocols = [];
+  
+    static ObjCProtocols = [ARSessionDelegate];
+    private owner: WeakRef<AR>;
+    // static new(): ARSessionDelegateImpl {
+    //     console.log('Create Session Delegate: Constructor');
+    //     return <ARSessionDelegateImpl>super.new() // calls new() on the NSObject
+    // }
 
-  private owner: WeakRef<AR>;
-  private resultCallback: (message: any) => void;
-  private options?: any;
-  private currentTrackingState = ARTrackingState.Normal;
+  //private _owner: WeakRef<AR>;
+  //private resultCallback: (message: any) => void;
+  //private options?: any;
+  //private currentTrackingState = ARTrackingState.Normal;
 
-  public static new(): ARSessionDelegateImpl {
-    try {
-      ARSessionDelegateImpl.ObjCProtocols.push(ARSessionDelegate);
-    } catch (ignore) {
-    }
-    return <ARSessionDelegateImpl>super.new();
-  }
+  // public static new(): ARSessionDelegateImpl {
+  //   try {
+  //     ARSessionDelegateImpl.ObjCProtocols.push(ARSessionDelegate);
+  //   } catch (ignore) {
+  //   }
+  //   return <ARSessionDelegateImpl>super.new();
+  // }
 
-  public static createWithOwnerResultCallbackAndOptions(owner: WeakRef<AR>, callback: (message: any) => void, options?: any): ARSessionDelegateImpl {
-    let delegate = <ARSessionDelegateImpl>ARSessionDelegateImpl.new();
+  // public static createWithOwnerResultCallbackAndOptions(owner: WeakRef<AR>, callback: (message: any) => void, options?: any): ARSessionDelegateImpl {
+  //   let delegate = <ARSessionDelegateImpl>ARSessionDelegateImpl.new();
+  //   delegate._owner = owner;
+  //   //delegate.options = options;
+  //   //delegate.resultCallback = callback;
+  //   return delegate;
+  // }
+
+  public static createWithOwner(owner: WeakRef<AR>): ARSessionDelegateImpl {
+
+
+    let delegate =  <ARSessionDelegateImpl>super.new();//<ARSessionDelegateImpl>ARSessionDelegateImpl.new();
     delegate.owner = owner;
-    delegate.options = options;
-    delegate.resultCallback = callback;
+    //delegate.options = options;
+    //delegate.resultCallback = callback;
     return delegate;
   }
 
   sessionDidUpdateFrame(session: ARSession, frame: ARFrame): void {
-    console.log("frame updated @ " + new Date().getTime());
+    if(!this.owner){
+      //console.log("seriously wtf happened");
+      return;
+    }
+    this.owner.get()._onUpdateFrame(frame);
+  }
+
+
+  sessionDidAddAnchors(session: ARSession, anchors: Array<ARAnchor>): void {
+    console.log("anchors updates");
   }
 }
 

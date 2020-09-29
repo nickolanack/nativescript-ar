@@ -65,7 +65,14 @@ export class ARImage extends ARCommonNode {
      });
   }
 
-  private static resolveImageOptions(options: ARAddImageOptions){
+  private static resolveImageOptions(options: ImageSource|ARAddImageOptions|string){
+
+
+    if (typeof options === "string"||options instanceof ImageSource){
+      options=<ARAddImageOptions>{
+        image:options
+      }
+    }
 
     return new Promise((resolve, reject)=>{
       
